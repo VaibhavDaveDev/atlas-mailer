@@ -1,0 +1,19 @@
+# .gitignore for Cloudflare Workers
+
+# Environment Variables & Secrets
+.dev.vars
+.env
+.env.local
+
+# Build & Runtime
+node_modules/
+.wrangler/
+dist/
+*.log
+
+# TypeScript
+tsconfig.tsbuildinfo
+
+# OS Files
+.DS_Store
+Thumbs.db
