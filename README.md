@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="120" height="120" alt="Atlas Mailer Logo" src="https://github.com/user-attachments/assets/81a2ecb1-3ef1-493e-b220-79202410d1a5" />
+  <img width="120" height="120" alt="Atlas Mailer Logo" src="https://github.com/user-attachments/assets/577a5de6-ab3b-4a74-8eaf-70dc23471eda" />
 
   # Atlas Mailer
 
