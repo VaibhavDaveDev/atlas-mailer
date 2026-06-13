@@ -10,6 +10,10 @@ node_modules/
 .wrangler/
 dist/
 *.log
+*.js
+*.js.map
+dist/
+build/
 
 # TypeScript
 tsconfig.tsbuildinfo
