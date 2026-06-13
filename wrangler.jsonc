@@ -12,6 +12,12 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		}
+	},
 	// "vars": {
 	//   "MY_VAR": "my-variable"
 	// },
