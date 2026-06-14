@@ -10,8 +10,9 @@ node_modules/
 .wrangler/
 dist/
 *.log
-*.js
-*.js.map
+# Ignore generated JavaScript outputs emitted next to TypeScript sources
+src/**/*.js
+src/**/*.js.map
 dist/
 build/
 
