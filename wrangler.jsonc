@@ -3,48 +3,43 @@
 	"name": "atlas-mailer",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-06-12",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"kv_namespaces": [
 		{
 			"binding": "MAILER_KV",
 			"id": "your-kv-namespace-id"
 		}
 	],
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"queues": {
+		"producers": [
+			{
+				"queue": "mailer-queue",
+				"binding": "MAILER_QUEUE"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "mailer-queue",
+				"max_retries": 5,
+				"dead_letter_queue": "mailer-dlq",
+				"max_batch_size": 10,
+				"max_batch_timeout": 5
+			},
+			{
+				"queue": "mailer-dlq",
+				"max_retries": 1,
+				"max_batch_size": 10,
+				"max_batch_timeout": 5
+			}
+		]
+	},
 	"observability": {
+		"enabled": true,
 		"logs": {
 			"enabled": true,
 			"invocation_logs": true
 		}
-	},
-	// "vars": {
-	//   "MY_VAR": "my-variable"
-	// },
-	// "kv_namespaces": [
-	//   {
-	//     "binding": "MY_KV_NAMESPACE",
-	//     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-	//   }
-	// ],
-	// "r2_buckets": [
-	//   {
-	//     "binding": "MY_BUCKET",
-	//     "bucket_name": "my-bucket"
-	//   }
-	// ],
-	// "d1_databases": [
-	//   {
-	//     "binding": "MY_DB",
-	//     "database_name": "my-database",
-	//     "database_id": ""
-	//   }
-	// ],
-	// "ai": {
-	//   "binding": "AI"
-	// },
-	// "observability": {
-	//   "enabled": true,
-	//   "head_sampling_rate": 1
-	// }
+	}
 }
