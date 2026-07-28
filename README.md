@@ -28,6 +28,7 @@ A robust microservice for dispatching transactional emails via Gmail SMTP. Built
 - **Runtime**: [Cloudflare Workers](https://workers.cloudflare.com/)
 - **Framework**: [Hono](https://hono.dev/) v4.x
 - **Validation & OpenAPI**: `@hono/zod-openapi` & `@hono/swagger-ui`
+- **SMTP Client**: [worker-mailer](https://github.com/zou-yu/worker-mailer) — uses `cloudflare:sockets` natively; works in queue consumers where `nodemailer` cannot
 - **Infrastructure**: Cloudflare Queues & KV
 - **Testing**: Vitest + `@cloudflare/vitest-pool-workers`
 - **Language**: TypeScript v5.x
@@ -98,7 +99,7 @@ sequenceDiagram
 
 If you are modifying this codebase, please keep these architectural decisions in mind to avoid introducing bugs:
 
-1. **The `nodejs_compat` Flag**: In `wrangler.jsonc`, you will see the `nodejs_compat` compatibility flag. **Do not remove this.** Cloudflare Workers do not natively support Node.js TCP sockets out of the box, which are required by `nodemailer` to talk to Gmail's SMTP servers. This flag enables a Cloudflare polyfill that allows `nodemailer` to function natively on the edge.
+1. **The `nodejs_compat` Flag + `worker-mailer`**: In `wrangler.jsonc`, you will see the `nodejs_compat` compatibility flag. **Do not remove this.** It is required by `worker-mailer`. We use [`worker-mailer`](https://github.com/zou-yu/worker-mailer) (not `nodemailer`) as the SMTP client because `nodemailer` relies on `node:net`/`node:tls` raw socket internals that fail in Cloudflare queue consumers with the error `TypeError: this._socket.on is not a function`. `worker-mailer` uses Cloudflare's native `cloudflare:sockets` TCP API and works correctly in both fetch handlers and queue consumers.
 2. **Rate Limit Incrementing**: The rate limit counter is incremented in `routes/send.ts` (the producer), **not** in the consumer. The rate limit represents "Requests accepted per day," not "Emails successfully sent per day." Incrementing in the producer ensures a bad actor cannot flood the queue with 10,000 bad emails that constantly fail.
 3. **Exponential Backoff & The DLQ**: When an email fails to send, we retry it using exponential backoff (15s, 30s, 60s, 2m, 4m). If the email fails 5 times, Cloudflare Queues automatically drops it from the main queue and routes it to `mailer-dlq` (Dead Letter Queue). `dlq.ts` picks it up, marks the KV status as `failed`, and stops trying. 
 4. **Single Consumer Concurrency**: Our queue configuration aims to ensure we only have one Worker instance processing emails at a time, preventing us from accidentally triggering Gmail's anti-spam concurrency limits by firing simultaneous SMTP connections.
