@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { WorkerMailer } from 'worker-mailer';
 
 export interface MailPayload {
   to: string;
@@ -16,21 +16,29 @@ export async function sendEmail(
   creds: MailCredentials,
   payload: MailPayload
 ): Promise<{ messageId: string }> {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: creds.gmailUser,
-      pass: creds.gmailAppPassword,
+  await WorkerMailer.send(
+    {
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,   // false = plain TCP first, then STARTTLS upgrade
+      startTls: true,  // required: Gmail mandates STARTTLS on port 587
+      credentials: {
+        username: creds.gmailUser,
+        password: creds.gmailAppPassword,
+      },
+      authType: 'plain',
     },
-  });
+    {
+      from: { email: creds.gmailUser },
+      to: { email: payload.to },
+      subject: payload.subject,
+      text: payload.text,
+      html: payload.html,
+    }
+  );
 
-  const info = await transporter.sendMail({
-    from: creds.gmailUser,
-    to: payload.to,
-    subject: payload.subject,
-    text: payload.text,
-    html: payload.html,
-  });
-
-  return { messageId: info.messageId };
+  // worker-mailer does not return the SMTP message-id.
+  // Generate a synthetic tracking ID for KV status records.
+  const messageId = crypto.randomUUID();
+  return { messageId };
 }
